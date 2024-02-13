@@ -5,6 +5,8 @@ import random
 
 def food():
 
+    global cord
+
     food_X = random.randint(0,49)
     food_Y = random.randint(0,49)
 
@@ -14,61 +16,48 @@ def food():
     w.create_rectangle(food_X, food_Y,food_X+10,food_Y+10,fill="green",tags="food")
 
     cord = [food_X,food_Y]
-    return cord
 
 def move(snake):
     
-    global f 
-
     l = snake.Width+snake.Xstart
     h = snake.Height+snake.Ystart
 
-    
-
+    snake.Body[0] = [snake.Xstart, snake.Ystart,l,h]
     if direction == 'left':
         snake.Xstart = snake.Xstart - 10
         l -= 10
+        snake.Body.insert(0,[snake.Xstart,snake.Ystart,l,h])
     elif direction == 'right':
         snake.Xstart = snake.Xstart + 10
-        l += 10 
+        l += 10
+        snake.Body.insert(0,[snake.Xstart,snake.Ystart,l,h])
     elif direction == 'up':
         snake.Ystart = snake.Ystart - 10
         h -= 10
+        snake.Body.insert(0,[snake.Xstart,snake.Ystart,l,h])
     else:
         snake.Ystart = snake.Ystart + 10
         h += 10
+        snake.Body.insert(0,[snake.Xstart,snake.Ystart,l,h])
+
     
-    snake.Body[0] = [snake.Xstart, snake.Ystart]
+    if snake.Xstart == cord[0] and snake.Ystart == cord[1]:
+        w.delete("snake")
+        for i in range(0,len(snake.Body)):
+            w.create_rectangle(snake.Body[i][0], snake.Body[i][1], snake.Body[i][2],snake.Body[i][3],fill=snake.Color, tags="snake")
+        #print(snake.Body)
+    else:
+        w.delete("snake")
+        snake.Body.pop()
+        for i in range(0,len(snake.Body)):
+            w.create_rectangle(snake.Body[i][0], snake.Body[i][1], snake.Body[i][2],snake.Body[i][3],fill=snake.Color, tags="snake")
 
-    w.delete("head")
-    w.create_rectangle(snake.Xstart, snake.Ystart, l,h,fill=snake.Color, tags="head")
-
-    if snake.Xstart == f[0] and snake.Ystart == f[1]:
-        cords = [snake.Xstart, snake.Ystart]
+    if snake.Xstart == cord[0] and snake.Ystart == cord[1]: 
         w.delete("food")
         print("Yummy!")
+        food()
 
-        
-        for i in range(2,len(snake.Body)):
-            snake.Body[i] = snake.Body[i-1]
-
-        if direction == 'down':
-            w.create_rectangle(cords[0], cords[1] - 10, cords[0] + 10, cords[1],fill=snake.Color, tags="snake")
-            snake.Body.append([cords[0],cords[1] - 10])
-        elif direction == 'up':
-            w.create_rectangle(cords[0], cords[1] + 10, cords[0] + 10, cords[1] + 20,fill=snake.Color, tags="snake")
-            snake.Body.append([cords[0],cords[1] + 10])
-        elif direction == 'right':
-            snake.Body.append([cords[0] - 10,cords[1]])
-            w.create_rectangle(cords[0] - 10, cords[1], cords[0], cords[1] + 10,fill=snake.Color, tags="snake")
-        elif direction == 'left':
-            w.create_rectangle(cords[0] + 10, cords[1], cords[0] + 20, cords[1] + 10,fill=snake.Color, tags="snake")
-            snake.Body.append([cords[0] + 10,cords[1]])
-        
-        f = food()
-        print(snake.Body)
-    
-    window.after(100, move, snake)
+    window.after(10, move, snake)
 
 def change_move(new_direction,snake):
 
@@ -87,7 +76,6 @@ def change_move(new_direction,snake):
         if direction != 'up':
             direction = new_direction
 
-
 window = Tk()
 window.title("Snake game")
 window.resizable(False, False)
@@ -99,13 +87,12 @@ window.update()
 direction = "down"
 
 snake = Snake(1)
-f = food()
+food()
 move(snake)
 
 l,h = snake.Width+snake.Xstart,snake.Height+snake.Ystart
 
-w.create_rectangle(snake.Xstart, snake.Ystart, l,h,fill=snake.Color,tags="head")
-
+w.create_rectangle(snake.Xstart, snake.Ystart, l,h,fill=snake.Color,tags="snake")
 
 window.bind('<Left>', lambda event: change_move('left',snake))
 window.bind('<Right>', lambda event: change_move('right',snake))
@@ -113,4 +100,3 @@ window.bind('<Up>', lambda event: change_move('up',snake))
 window.bind('<Down>', lambda event: change_move('down',snake))
 
 w.mainloop()
-
