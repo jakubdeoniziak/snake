@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from PIL import ImageTk
 from snake import Snake
 import random
 
@@ -18,6 +19,8 @@ def food():
     cord = [food_X,food_Y]
 
 def move(snake):
+    
+    global score
     
     l = snake.Width+snake.Xstart
     h = snake.Height+snake.Ystart
@@ -39,13 +42,11 @@ def move(snake):
         snake.Ystart = snake.Ystart + 10
         h += 10
         snake.Body.insert(0,[snake.Xstart,snake.Ystart,l,h])
-
-    
+        
     if snake.Xstart == cord[0] and snake.Ystart == cord[1]:
         w.delete("snake")
         for i in range(0,len(snake.Body)):
             w.create_rectangle(snake.Body[i][0], snake.Body[i][1], snake.Body[i][2],snake.Body[i][3],fill=snake.Color, tags="snake")
-        #print(snake.Body)
     else:
         w.delete("snake")
         snake.Body.pop()
@@ -54,10 +55,25 @@ def move(snake):
 
     if snake.Xstart == cord[0] and snake.Ystart == cord[1]: 
         w.delete("food")
+        score += 10
+        label2.config(text="Score:{}".format(score))
         print("Yummy!")
         food()
 
-    window.after(10, move, snake)
+    if collision(snake):
+        w.delete(ALL)
+        w.create_text(w.winfo_width()/2, w.winfo_height()/2,font=('Arial',40), text="GAME OVER", fill="red", tag="gameover") 
+    else:
+        window.after(50, move, snake)
+
+    
+def collision(snake):
+    for i in range(1,len(snake.Body)):
+        if snake.Body[0] == snake.Body[i]:
+           return True
+
+    if snake.Xstart > w.winfo_height() or snake.Ystart > w.winfo_width() or snake.Xstart < 0 or snake.Ystart < 0:
+        return True
 
 def change_move(new_direction,snake):
 
@@ -80,9 +96,21 @@ window = Tk()
 window.title("Snake game")
 window.resizable(False, False)
 
+img = ImageTk.PhotoImage(file="snake.jpg")
+
+label1 = Label(window,image=img)
+
+score = 0
+
 w = Canvas (window, bg="black",height=500,width=500)
+
+label2 = Label(window,text="Score:{}".format(score),font=('Arial', 40))
+
+label1.pack()
 w.pack()
+label2.pack()
 window.update()
+
 
 direction = "down"
 
